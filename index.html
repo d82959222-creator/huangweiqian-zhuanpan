@@ -660,7 +660,7 @@
     resultPhoto.onerror = function() {
       resultPhoto.classList.remove('loading');
       // 图片加载失败时显示名字
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%232a2a4a" width="200" height="200"/><text fill="%23ffd700" font-size="24" font-family="Microsoft YaHei,sans-serif" text-anchor="middle" x="100" y="110">' + name + '</text></svg>';
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="#2a2a4a" width="200" height="200"/><text fill="#ffd700" font-size="24" font-family="Microsoft YaHei,sans-serif" text-anchor="middle" x="100" y="110">' + name + '</text></svg>';
       resultPhoto.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
     };
     resultPhoto.src = photoUrl;
