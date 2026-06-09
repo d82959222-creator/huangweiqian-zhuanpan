@@ -335,7 +335,7 @@
   <div class="result-card">
     <div class="icon">🎯</div>
     <div class="label">恭 喜 翻 到</div>
-    <img class="result-photo loading" id="resultPhoto" src="" alt="照片" >
+    <img class="result-photo loading" id="resultPhoto" src="" alt="照片" referrerpolicy="no-referrer" loading="eager">
     <div class="weapon" id="resultName"></div>
     <button class="spin-btn" id="spinAgain">🔄 再翻一次</button>
     <button class="exit-btn" id="exitBtn">✕ 退 出</button>
@@ -653,17 +653,17 @@
 
     // 加载照片
     const photoUrl = photos[name];
-    
     resultPhoto.classList.add('loading');
-    resultPhoto.src = photoUrl;
     resultPhoto.onload = function() {
       resultPhoto.classList.remove('loading');
     };
     resultPhoto.onerror = function() {
       resultPhoto.classList.remove('loading');
-      resultPhoto.style.background = '#2a2a4a';
-      resultPhoto.alt = name;
+      // 图片加载失败时显示名字
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%232a2a4a" width="200" height="200"/><text fill="%23ffd700" font-size="24" font-family="Microsoft YaHei,sans-serif" text-anchor="middle" x="100" y="110">' + name + '</text></svg>';
+      resultPhoto.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
     };
+    resultPhoto.src = photoUrl;
 
     overlay.classList.remove('hidden');
     createCelebration();
