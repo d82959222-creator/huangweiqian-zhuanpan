@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>黄维倩请转盘</title>
+<title>黄维倩请翻牌子</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -22,7 +22,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* 背景粒子 */
   .particles {
     position: fixed;
     top: 0; left: 0;
@@ -43,7 +42,6 @@
     100% { transform: translateY(-10vh) scale(1.8); opacity: 0; }
   }
 
-  /* 标题 */
   .title {
     position: relative;
     z-index: 2;
@@ -66,7 +64,6 @@
     75%     { background-position: 0% 100%; }
   }
 
-  /* 转盘容器 */
   .wheel-container {
     position: relative;
     z-index: 2;
@@ -74,7 +71,6 @@
     height: 560px;
   }
 
-  /* 指针 */
   .pointer {
     position: absolute;
     top: -32px;
@@ -101,7 +97,6 @@
     box-shadow: 0 0 24px rgba(255,255,255,0.9), 0 0 48px rgba(255,23,68,0.5);
   }
 
-  /* Canvas */
   canvas {
     display: block;
     border-radius: 50%;
@@ -112,15 +107,9 @@
     cursor: pointer;
     transition: filter 0.3s, transform 0.15s;
   }
-  canvas:hover {
-    filter: brightness(1.08);
-  }
-  canvas:active {
-    filter: brightness(0.95);
-    transform: scale(0.98);
-  }
+  canvas:hover { filter: brightness(1.08); }
+  canvas:active { filter: brightness(0.95); transform: scale(0.98); }
 
-  /* 中心按钮 */
   .center-btn {
     position: absolute;
     top: 50%; left: 50%;
@@ -146,20 +135,15 @@
     transform: translate(-50%, -50%) scale(1.1);
     box-shadow: 0 8px 36px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.6), 0 0 50px rgba(255,23,68,0.5);
   }
-  .center-btn:active {
-    transform: translate(-50%, -50%) scale(0.93);
-  }
-  .center-btn.spinning {
-    pointer-events: none;
-    opacity: 0.6;
-  }
+  .center-btn:active { transform: translate(-50%, -50%) scale(0.93); }
+  .center-btn.spinning { pointer-events: none; opacity: 0.6; }
 
-  /* 结果弹窗 */
+  /* ===== 结果弹窗 ===== */
   .overlay {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0,0,0,0.75);
+    background: rgba(0,0,0,0.8);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -176,11 +160,11 @@
     background: linear-gradient(145deg, #1a1a38, #2c2c50);
     border: 2px solid rgba(255,255,255,0.25);
     border-radius: 28px;
-    padding: 44px 56px;
+    padding: 36px 48px;
     text-align: center;
     box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 120px rgba(255,215,0,0.2);
     animation: popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    max-width: 460px;
+    max-width: 440px;
     width: 90%;
   }
   @keyframes popIn {
@@ -189,31 +173,51 @@
   }
 
   .result-card .icon {
-    font-size: 76px;
-    margin-bottom: 14px;
+    font-size: 60px;
+    margin-bottom: 8px;
     animation: bounceIcon 0.5s ease infinite alternate;
   }
   @keyframes bounceIcon {
     from { transform: translateY(0); }
-    to   { transform: translateY(-18px); }
+    to   { transform: translateY(-14px); }
   }
 
   .result-card .label {
-    font-size: 18px;
+    font-size: 16px;
     color: #bbb;
     letter-spacing: 6px;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
   }
+
+  /* 照片 */
+  .result-photo {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #ffd700;
+    box-shadow: 0 0 40px rgba(255,215,0,0.5), 0 8px 30px rgba(0,0,0,0.4);
+    margin: 12px auto;
+    display: block;
+    background: #1a1a35;
+  }
+  .result-photo.loading {
+    animation: photoShimmer 1.5s ease-in-out infinite;
+  }
+  @keyframes photoShimmer {
+    0%,100% { border-color: #ffd700; box-shadow: 0 0 30px rgba(255,215,0,0.3); }
+    50%     { border-color: #fff;    box-shadow: 0 0 60px rgba(255,215,0,0.7); }
+  }
+
   .result-card .weapon {
-    font-size: 38px;
+    font-size: 34px;
     font-weight: 900;
     color: #ffd700;
     letter-spacing: 4px;
-    margin-bottom: 36px;
+    margin: 12px 0 28px;
     text-shadow: 0 0 30px rgba(255,215,0,0.6);
-    word-break: keep-all;
-    line-height: 1.4;
   }
+
   .result-card .spin-btn {
     padding: 14px 52px;
     font-size: 20px;
@@ -231,11 +235,10 @@
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 14px 48px rgba(255,23,68,0.7);
   }
-  .result-card .spin-btn:active {
-    transform: scale(0.95);
-  }
+  .result-card .spin-btn:active { transform: scale(0.95); }
+
   .result-card .exit-btn {
-    margin-top: 18px;
+    margin-top: 16px;
     display: block;
     width: 100%;
     background: transparent;
@@ -249,12 +252,8 @@
     letter-spacing: 3px;
     transition: background 0.2s;
   }
-  .result-card .exit-btn:hover {
-    background: rgba(255,255,255,0.1);
-    box-shadow: none;
-  }
+  .result-card .exit-btn:hover { background: rgba(255,255,255,0.1); }
 
-  /* 提示文字 */
   .hint {
     position: relative;
     z-index: 2;
@@ -264,7 +263,6 @@
     letter-spacing: 4px;
   }
 
-  /* 分享链接 */
   .share-link {
     position: relative;
     z-index: 2;
@@ -283,10 +281,7 @@
     text-decoration: none;
     word-break: break-all;
   }
-  .share-link a:hover {
-    color: #90caf9;
-    text-decoration: underline;
-  }
+  .share-link a:hover { color: #90caf9; text-decoration: underline; }
   .copy-btn {
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.25);
@@ -298,46 +293,37 @@
     letter-spacing: 1px;
     transition: background 0.2s;
   }
-  .copy-btn:hover {
-    background: rgba(255,255,255,0.2);
-  }
-  .copied-msg {
-    color: #4caf50;
-    font-size: 12px;
-    display: none;
-  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+  .copied-msg { color: #4caf50; font-size: 12px; display: none; }
   .copied-msg.show { display: inline; }
 
-  /* 手机适配 */
   @media (max-width: 600px) {
-    .title { font-size: 28px; letter-spacing: 4px; margin-bottom: 12px; }
+    .title { font-size: 26px; letter-spacing: 4px; margin-bottom: 12px; }
     .wheel-container { width: 92vw; height: 92vw; }
     canvas { width: 92vw; height: 92vw; }
     .center-btn { width: 64px; height: 64px; font-size: 16px; border-width: 4px; }
     .pointer { top: -22px; border-left-width: 16px; border-right-width: 16px; border-top-width: 38px; }
     .pointer::after { top: -46px; left: -8px; width: 16px; height: 16px; }
     .hint { font-size: 12px; }
+    .result-photo { width: 140px; height: 140px; }
+    .result-card .weapon { font-size: 26px; }
   }
 </style>
 </head>
 <body>
 
-<!-- 背景粒子 -->
 <div class="particles" id="particles"></div>
 
-<!-- 标题 -->
-<div class="title">黄维倩请转盘</div>
+<div class="title">黄维倩请翻牌子</div>
 
-<!-- 转盘 -->
 <div class="wheel-container" id="wheelContainer">
   <div class="pointer" id="pointer"></div>
   <canvas id="wheelCanvas" width="560" height="560"></canvas>
-  <button class="center-btn" id="centerBtn" title="点击开始转盘">转</button>
+  <button class="center-btn" id="centerBtn" title="点击开始翻牌">翻</button>
 </div>
 
 <div class="hint">↑ 点击转盘或中间按钮开始 ↑</div>
 
-<!-- 🔗 分享链接 -->
 <div class="share-link" id="shareLink">
   📎 分享链接：<a href="https://d82959222-creator.github.io/huangweiqian-zhuanpan/" target="_blank">d82959222-creator.github.io/huangweiqian-zhuanpan</a>
   <button class="copy-btn" id="copyBtn" title="复制链接">📋 复制</button>
@@ -348,57 +334,57 @@
 <div class="overlay hidden" id="overlay">
   <div class="result-card">
     <div class="icon">🎯</div>
-    <div class="label">恭 喜 获 得</div>
-    <div class="weapon" id="resultWeapon"></div>
-    <button class="spin-btn" id="spinAgain">🔄 再转一次</button>
+    <div class="label">恭 喜 翻 到</div>
+    <img class="result-photo loading" id="resultPhoto" src="" alt="照片" crossorigin="anonymous">
+    <div class="weapon" id="resultName"></div>
+    <button class="spin-btn" id="spinAgain">🔄 再翻一次</button>
     <button class="exit-btn" id="exitBtn">✕ 退 出</button>
   </div>
 </div>
 
 <script>
 (function() {
-  // ========== 20 个选项 ==========
+  // ========== 10 位男星 ==========
   const items = [
-    'AK47-奉先',
-    'M4A1-星象',
-    'MK47-仁德',
-    'M4A1-威侯',
-    'SCAR-文远',
-    '王者之心（AK）',
-    '王者幻神（M200）',
-    '巴雷特-毁灭',
-    'AWM-天龙',
-    '王者之力（AWM）',
-    '贝雷塔687',
-    '王者之烈',
-    'MP5-兰',
-    '王者之锋（斯泰尔）',
-    'KAC-突袭者',
-    'MG36-魔礼青',
-    '沙鹰-天神',
-    'USP-仁德',
-    'COP357-雷神',
-    '81式-瑜'
+    '肖战',
+    '王一博',
+    '杨洋',
+    '王鹤棣',
+    '吴磊',
+    '李现',
+    '任嘉伦',
+    '宋威龙',
+    '龚俊',
+    '张凌赫'
   ];
 
-  // ========== 7 种鲜艳颜色（红橙黄绿青蓝紫） ==========
+  // ========== 对应照片 ==========
+  // 替换方法：浏览器打开 baike.baidu.com 搜明星名 -> 右键头像 -> 复制图片地址 -> 替换下面URL
+  const photos = {
+    '肖战':   'https://placehold.co/200x200/ff6b6b/fff?text=xiaozhan',
+    '王一博': 'https://placehold.co/200x200/ff9100/fff?text=wangyibo',
+    '杨洋':   'https://placehold.co/200x200/ffea00/333?text=yangyang',
+    '王鹤棣': 'https://placehold.co/200x200/00e676/fff?text=wanghedi',
+    '吴磊':   'https://placehold.co/200x200/00e5ff/fff?text=wulei',
+    '李现':   'https://placehold.co/200x200/2979ff/fff?text=lixian',
+    '任嘉伦': 'https://placehold.co/200x200/d500f9/fff?text=renjialun',
+    '宋威龙': 'https://placehold.co/200x200/e91e63/fff?text=songweilong',
+    '龚俊':   'https://placehold.co/200x200/00bcd4/fff?text=gongjun',
+    '张凌赫': 'https://placehold.co/200x200/7c4dff/fff?text=zhanglinghe'
+  };
+
+  const photosBackup = photos;
+
+  // ========== 7 种鲜艳颜色 ==========
   const colors = [
-    '#FF1744', // 红 - 鲜艳红
-    '#FF9100', // 橙 - 鲜艳橙
-    '#FFEA00', // 黄 - 鲜艳黄
-    '#00E676', // 绿 - 鲜艳绿
-    '#00E5FF', // 青 - 鲜艳青
-    '#2979FF', // 蓝 - 鲜艳蓝
-    '#D500F9'  // 紫 - 鲜艳紫
+    '#FF1744', '#FF9100', '#FFEA00',
+    '#00E676', '#00E5FF', '#2979FF',
+    '#D500F9'
   ];
 
-  // 交替深浅色，让每个扇区区别更明显
   function getSegmentColor(index) {
     const base = colors[index % colors.length];
-    // 偶数用原色，奇数用稍微深一点的变体
-    if (index % 2 === 0) return base;
-    // 加深相邻扇区
-    return darkenColor(base, 0.22);
+    return index % 2 === 0 ? base : darkenColor(base, 0.22);
   }
 
   function darkenColor(hex, amount) {
@@ -409,46 +395,87 @@
     return `rgb(${r},${g},${b})`;
   }
 
-  // ========== DOM 元素 ==========
+  // ========== DOM ==========
   const canvas = document.getElementById('wheelCanvas');
   const ctx = canvas.getContext('2d');
   const centerBtn = document.getElementById('centerBtn');
   const pointer = document.getElementById('pointer');
   const overlay = document.getElementById('overlay');
-  const resultWeapon = document.getElementById('resultWeapon');
+  const resultName = document.getElementById('resultName');
+  const resultPhoto = document.getElementById('resultPhoto');
   const spinAgainBtn = document.getElementById('spinAgain');
   const exitBtn = document.getElementById('exitBtn');
   const wheelContainer = document.getElementById('wheelContainer');
 
-  // 响应式尺寸
-  function getSize() {
-    const w = wheelContainer.clientWidth;
-    return w || 560;
-  }
+  function getSize() { return wheelContainer.clientWidth || 560; }
 
-  let WIDTH = canvas.width;
-  let HEIGHT = canvas.height;
-  let CENTER_X = WIDTH / 2;
-  let CENTER_Y = HEIGHT / 2;
-  let RADIUS = 248;
+  let WIDTH = 560, HEIGHT = 560, CENTER_X = 280, CENTER_Y = 280, RADIUS = 248;
   const SEG_COUNT = items.length;
   const ARC = (2 * Math.PI) / SEG_COUNT;
 
-  // ========== 状态 ==========
   let currentAngle = 0;
   let isSpinning = false;
   let animationId = null;
 
-  // ========== 响应式重绘 ==========
+  // ========== 音效引擎（Web Audio API） ==========
+  let audioCtx = null;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  // 播放一次"咔嗒"声（扇区边界通过指针时触发）
+  function playTick() {
+    if (!audioCtx) return;
+    try {
+      const t = audioCtx.currentTime;
+      // 清脆的咔嗒声：短促的噪声 + 高频正弦波
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1800, t);
+      osc.frequency.exponentialRampToValueAtTime(800, t + 0.04);
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.05);
+    } catch(e) { /* 静默处理 */ }
+  }
+
+  // 旋转结束的胜利音效
+  function playWinSound() {
+    if (!audioCtx) return;
+    try {
+      const t = audioCtx.currentTime;
+      const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, t + i * 0.1);
+        gain.gain.linearRampToValueAtTime(0.2, t + i * 0.1 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t + i * 0.1);
+        osc.stop(t + i * 0.1 + 0.3);
+      });
+    } catch(e) { /* 静默处理 */ }
+  }
+
+  // ========== 响应式 ==========
   function updateDimensions() {
     const size = getSize();
     if (canvas.width !== size) {
-      canvas.width = size;
-      canvas.height = size;
-      WIDTH = size;
-      HEIGHT = size;
-      CENTER_X = size / 2;
-      CENTER_Y = size / 2;
+      canvas.width = size; canvas.height = size;
+      WIDTH = size; HEIGHT = size;
+      CENTER_X = size / 2; CENTER_Y = size / 2;
       RADIUS = size * 0.443;
     }
   }
@@ -458,31 +485,30 @@
     updateDimensions();
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-    // 外圈装饰环（金色）
-    const outerRingGrad = ctx.createRadialGradient(CENTER_X, CENTER_Y, RADIUS + 8, CENTER_X, CENTER_Y, RADIUS + 20);
-    outerRingGrad.addColorStop(0, '#ffd700');
-    outerRingGrad.addColorStop(0.5, '#ffaa00');
-    outerRingGrad.addColorStop(1, '#cc8800');
+    // 外圈金色装饰环
+    const outerGrad = ctx.createRadialGradient(CENTER_X, CENTER_Y, RADIUS + 6, CENTER_X, CENTER_Y, RADIUS + 20);
+    outerGrad.addColorStop(0, '#ffd700');
+    outerGrad.addColorStop(0.5, '#ffaa00');
+    outerGrad.addColorStop(1, '#cc8800');
     ctx.beginPath();
     ctx.arc(CENTER_X, CENTER_Y, RADIUS + 18, 0, 2 * Math.PI);
-    ctx.fillStyle = outerRingGrad;
+    ctx.fillStyle = outerGrad;
     ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // 外圈灯泡效果
+    // 灯泡
     const bulbCount = 48;
     for (let i = 0; i < bulbCount; i++) {
-      const bulbAngle = (i / bulbCount) * 2 * Math.PI;
-      const bx = CENTER_X + (RADIUS + 16) * Math.cos(bulbAngle);
-      const by = CENTER_Y + (RADIUS + 16) * Math.sin(bulbAngle);
+      const ba = (i / bulbCount) * 2 * Math.PI;
+      const bx = CENTER_X + (RADIUS + 16) * Math.cos(ba);
+      const by = CENTER_Y + (RADIUS + 16) * Math.sin(ba);
+      const bright = Math.sin(Date.now() / 250 + i * 0.6) * 0.4 + 0.6;
       ctx.beginPath();
       ctx.arc(bx, by, 4.5, 0, 2 * Math.PI);
-      const bright = Math.sin(Date.now() / 250 + i * 0.6) * 0.4 + 0.6;
       ctx.fillStyle = `rgba(255,255,220,${bright})`;
       ctx.fill();
-      // 光晕
       ctx.beginPath();
       ctx.arc(bx, by, 7, 0, 2 * Math.PI);
       ctx.fillStyle = `rgba(255,255,200,${bright * 0.3})`;
@@ -495,75 +521,55 @@
       const endAngle = startAngle + ARC;
       const midAngle = startAngle + ARC / 2;
 
-      // 填充扇区
+      // 填充
       ctx.beginPath();
       ctx.moveTo(CENTER_X, CENTER_Y);
       ctx.arc(CENTER_X, CENTER_Y, RADIUS, startAngle, endAngle);
       ctx.closePath();
       ctx.fillStyle = getSegmentColor(i);
       ctx.fill();
-      // 白色分割线
-      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // ===== 文字：沿半径方向竖着排列 =====
-      const textRadiusStart = RADIUS * 0.22;
-      const textRadiusEnd   = RADIUS * 0.90;
-      const textMidRadius   = (textRadiusStart + textRadiusEnd) / 2;
+      // ===== 文字：从扇角（圆心）向扇弧（外缘）竖排 =====
+      const textStartR = RADIUS * 0.20;  // 靠近圆心（扇角）
+      const textEndR   = RADIUS * 0.88;  // 靠近外缘（扇弧）
+      const textMidR   = (textStartR + textEndR) / 2;
 
       ctx.save();
-      // 移到扇区中间、文字中心位置
-      const tx = CENTER_X + textMidRadius * Math.cos(midAngle);
-      const ty = CENTER_Y + textMidRadius * Math.sin(midAngle);
+      const tx = CENTER_X + textMidR * Math.cos(midAngle);
+      const ty = CENTER_Y + textMidR * Math.sin(midAngle);
       ctx.translate(tx, ty);
 
-      // 让文字沿半径方向（从圆心向外竖着排列）
-      const normalizedMid = ((midAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-      const isFlipped = normalizedMid > Math.PI / 2 && normalizedMid < 3 * Math.PI / 2;
-      if (isFlipped) {
-        // 左/下半侧：翻转180°保证文字可读
-        ctx.rotate(midAngle + Math.PI);
-      } else {
-        // 右/上半侧：文字从圆心向外读
-        ctx.rotate(midAngle);
-      }
+      const nm = ((midAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const isFlipped = nm > Math.PI / 2 && nm < 3 * Math.PI / 2;
+      ctx.rotate(isFlipped ? midAngle + Math.PI : midAngle);
 
       const text = items[i];
-      // 根据可用空间动态计算字号：最长名称也能完整放下
-      const availRadialSpace = textRadiusEnd - textRadiusStart;
-      const maxCharCount = 9; // 最长："王者之锋（斯泰尔）" = 9 字符
-      const fontSize = Math.floor(Math.min(
-        availRadialSpace / (maxCharCount + 1),  // 给最长名称留足空间
-        RADIUS * 0.058                           // 上限
-      ));
-      const charSpacing = fontSize * 1.05;
+      const availSpace = textEndR - textStartR;
+      const fontSize = Math.floor(Math.min(availSpace / 5, RADIUS * 0.082));
+      const charSpacing = fontSize * 1.1;
 
       ctx.font = `bold ${fontSize}px "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // 翻转侧的文字倒序排列，保证始终从圆心向外读
       const chars = isFlipped ? [...text].reverse() : text;
-
-      // 逐字竖排，居中在 textMidRadius 处
-      const totalHeight = chars.length * charSpacing;
-      const startOffset  = -totalHeight / 2 + charSpacing / 2;
+      const totalH = chars.length * charSpacing;
+      const startOff = -totalH / 2 + charSpacing / 2;
 
       for (let c = 0; c < chars.length; c++) {
-        const cy = startOffset + c * charSpacing;
-        // 阴影
-        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        const cy = startOff + c * charSpacing;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillText(chars[c], 1, cy + 1);
-        // 主体白色
         ctx.fillStyle = '#ffffff';
         ctx.fillText(chars[c], 0, cy);
       }
-
       ctx.restore();
     }
 
-    // 内圈装饰
+    // 内圈
     const innerGrad = ctx.createRadialGradient(CENTER_X, CENTER_Y, 20, CENTER_X, CENTER_Y, 58);
     innerGrad.addColorStop(0, '#ffffff');
     innerGrad.addColorStop(0.6, '#f0f0f0');
@@ -581,17 +587,19 @@
   function idleAnimate() {
     if (isSpinning) return;
     drawWheel(currentAngle);
-    requestAnimationFrame(() => {
-      if (!isSpinning) idleAnimate();
-    });
+    requestAnimationFrame(() => { if (!isSpinning) idleAnimate(); });
   }
 
   // ========== 旋转 ==========
+  let lastTickSeg = -1;
+
   function spin() {
     if (isSpinning) return;
+    initAudio();
     isSpinning = true;
     centerBtn.classList.add('spinning');
     pointer.style.transform = 'translateX(-50%) scale(1.2)';
+    lastTickSeg = -1;
 
     const extraSpins = 5 + Math.random() * 3;
     const randomOffset = Math.random() * 2 * Math.PI;
@@ -604,11 +612,18 @@
     function animate(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1.0);
-      // ease-out: 先快后慢
       const eased = 1 - Math.pow(1 - progress, 3.5);
 
       currentAngle = startAngle + totalRotation * eased;
       drawWheel(currentAngle);
+
+      // 播放咔嗒声：每当扇区边界经过指针时
+      const pointerWorldAngle = (currentAngle - Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI);
+      const currentSeg = Math.floor(pointerWorldAngle / ARC);
+      if (currentSeg !== lastTickSeg) {
+        lastTickSeg = currentSeg;
+        playTick();
+      }
 
       if (progress < 1.0) {
         animationId = requestAnimationFrame(animate);
@@ -627,52 +642,78 @@
     isSpinning = false;
     centerBtn.classList.remove('spinning');
     pointer.style.transform = 'translateX(-50%)';
+    playWinSound();
 
-    // 指针在顶部（12点钟 = -π/2），计算指向的扇区
     let pointerAngle = (2 * Math.PI - (currentAngle % (2 * Math.PI)) - Math.PI / 2) % (2 * Math.PI);
     if (pointerAngle < 0) pointerAngle += 2 * Math.PI;
-
     const winningIndex = Math.floor(pointerAngle / ARC);
-    const weapon = items[winningIndex];
+    const name = items[winningIndex];
 
-    resultWeapon.textContent = weapon;
+    resultName.textContent = name;
+
+    // 加载照片
+    const primaryUrl = photos[name];
+    const backupUrl = photosBackup[name];
+    resultPhoto.classList.add('loading');
+    resultPhoto.src = '';
+
+    // 尝试加载主图，失败则用备选
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      resultPhoto.src = primaryUrl;
+      resultPhoto.classList.remove('loading');
+    };
+    img.onerror = function() {
+      // 尝试备选
+      const img2 = new Image();
+      img2.crossOrigin = 'anonymous';
+      img2.onload = function() {
+        resultPhoto.src = backupUrl;
+        resultPhoto.classList.remove('loading');
+      };
+      img2.onerror = function() {
+        // 都失败了，显示占位
+        resultPhoto.src = '';
+        resultPhoto.classList.remove('loading');
+        resultPhoto.style.background = '#2a2a4a';
+        resultPhoto.alt = name + '（照片加载失败）';
+      };
+      img2.src = backupUrl;
+    };
+    img.src = primaryUrl;
+
     overlay.classList.remove('hidden');
     createCelebration();
   }
 
   // ========== 庆祝效果 ==========
   function createCelebration() {
-    const emojis = ['🎉', '✨', '🌟', '💫', '🎊', '🎯', '🔥', '⚡', '🎆', '💥'];
-    for (let i = 0; i < 40; i++) {
+    const emojis = ['🎉', '✨', '🌟', '💫', '🎊', '🎯', '🔥', '⚡', '🎆', '💥', '❤️', '💖'];
+    for (let i = 0; i < 45; i++) {
       setTimeout(() => {
         const el = document.createElement('span');
         el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-        const dx = (Math.random() - 0.5) * 300;
-        const dy = -(100 + Math.random() * 300);
+        const dx = (Math.random() - 0.5) * 350;
+        const dy = -(100 + Math.random() * 350);
         el.style.cssText = `
-          position: fixed;
-          z-index: 200;
-          font-size: ${22 + Math.random() * 40}px;
-          left: 50%;
-          top: 40%;
-          pointer-events: none;
-          animation: celebPop ${0.7 + Math.random() * 1.4}s ease-out forwards;
-          --dx: ${dx}px;
-          --dy: ${dy}px;
+          position:fixed;z-index:200;font-size:${22+Math.random()*44}px;
+          left:50%;top:40%;pointer-events:none;
+          animation:celebPop ${0.7+Math.random()*1.5}s ease-out forwards;
+          --dx:${dx}px;--dy:${dy}px;
         `;
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 2500);
-      }, i * 25);
+      }, i * 22);
     }
   }
 
-  // 庆祝动画 keyframes
   const celebStyle = document.createElement('style');
   celebStyle.textContent = `
     @keyframes celebPop {
-      0%   { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; }
-      50%  { opacity: 0.9; }
-      100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.3) rotate(${Math.random() > 0.5 ? '' : '-'}${120 + Math.random() * 240}deg); opacity: 0; }
+      0%   { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity:1; }
+      50%  { opacity:0.9; }
+      100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.4) rotate(${Math.random()>0.5?'':'-'}${120+Math.random()*240}deg); opacity:0; }
     }
   `;
   document.head.appendChild(celebStyle);
@@ -681,7 +722,7 @@
   function resetAndSpin() {
     overlay.classList.add('hidden');
     document.querySelectorAll('span[style*="celebPop"]').forEach(el => el.remove());
-    setTimeout(() => spin(), 250);
+    setTimeout(() => spin(), 300);
   }
 
   function exitApp() {
@@ -697,7 +738,7 @@
     }
   }
 
-  // ========== 事件绑定 ==========
+  // ========== 事件 ==========
   canvas.addEventListener('click', (e) => {
     if (isSpinning) return;
     const rect = canvas.getBoundingClientRect();
@@ -706,7 +747,6 @@
     if (Math.sqrt(cx * cx + cy * cy) < RADIUS + 20) spin();
   });
 
-  // 触摸事件（手机）
   canvas.addEventListener('touchend', (e) => {
     if (isSpinning) return;
     e.preventDefault();
@@ -721,42 +761,25 @@
   spinAgainBtn.addEventListener('click', resetAndSpin);
   exitBtn.addEventListener('click', exitApp);
 
-  // ========== 复制链接 ==========
-  const copyBtn = document.getElementById('copyBtn');
-  const copiedMsg = document.getElementById('copiedMsg');
-  copyBtn.addEventListener('click', () => {
-    const url = 'https://d82959222-creator.github.io/huangweiqian-zhuanpan/';
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(() => {
-        copiedMsg.classList.add('show');
-        setTimeout(() => copiedMsg.classList.remove('show'), 2000);
-      });
-    } else {
-      // 兼容旧浏览器
-      const ta = document.createElement('textarea');
-      ta.value = url;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      copiedMsg.classList.add('show');
-      setTimeout(() => copiedMsg.classList.remove('show'), 2000);
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !isSpinning && overlay.classList.contains('hidden')) {
+      e.preventDefault(); spin();
+    }
+    if (e.code === 'Escape') {
+      if (!overlay.classList.contains('hidden')) overlay.classList.add('hidden');
+      else exitApp();
     }
   });
 
-  document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && !isSpinning && overlay.classList.contains('hidden')) {
-      e.preventDefault();
-      spin();
-    }
-    if (e.code === 'Escape') {
-      if (!overlay.classList.contains('hidden')) {
-        overlay.classList.add('hidden');
-      } else {
-        exitApp();
-      }
+  // 复制链接
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const url = 'https://d82959222-creator.github.io/huangweiqian-zhuanpan/';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        const msg = document.getElementById('copiedMsg');
+        msg.classList.add('show');
+        setTimeout(() => msg.classList.remove('show'), 2000);
+      });
     }
   });
 
@@ -768,18 +791,18 @@
       const p = document.createElement('div');
       p.classList.add('particle');
       const size = 2 + Math.random() * 7;
-      p.style.width = size + 'px';
-      p.style.height = size + 'px';
-      p.style.left = Math.random() * 100 + '%';
-      p.style.backgroundColor = colorArr[Math.floor(Math.random() * colorArr.length)];
-      p.style.animationDuration = (5 + Math.random() * 15) + 's';
-      p.style.animationDelay = Math.random() * 12 + 's';
-      p.style.boxShadow = `0 0 ${size * 3}px ${p.style.backgroundColor}`;
+      Object.assign(p.style, {
+        width: size + 'px', height: size + 'px',
+        left: Math.random() * 100 + '%',
+        backgroundColor: colorArr[Math.floor(Math.random() * colorArr.length)],
+        animationDuration: (5 + Math.random() * 15) + 's',
+        animationDelay: Math.random() * 12 + 's',
+        boxShadow: `0 0 ${size * 3}px ${p.style.backgroundColor}`
+      });
       container.appendChild(p);
     }
   }
 
-  // ========== 窗口大小变化重绘 ==========
   window.addEventListener('resize', () => {
     if (!isSpinning) drawWheel(currentAngle);
   });
