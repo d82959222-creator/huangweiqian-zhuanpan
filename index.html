@@ -264,6 +264,50 @@
     letter-spacing: 4px;
   }
 
+  /* 分享链接 */
+  .share-link {
+    position: relative;
+    z-index: 2;
+    margin-top: 14px;
+    color: rgba(255,255,255,0.55);
+    font-size: 13px;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .share-link a {
+    color: #64b5f6;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .share-link a:hover {
+    color: #90caf9;
+    text-decoration: underline;
+  }
+  .copy-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #ccc;
+    padding: 4px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 1px;
+    transition: background 0.2s;
+  }
+  .copy-btn:hover {
+    background: rgba(255,255,255,0.2);
+  }
+  .copied-msg {
+    color: #4caf50;
+    font-size: 12px;
+    display: none;
+  }
+  .copied-msg.show { display: inline; }
+
   /* 手机适配 */
   @media (max-width: 600px) {
     .title { font-size: 28px; letter-spacing: 4px; margin-bottom: 12px; }
@@ -292,6 +336,13 @@
 </div>
 
 <div class="hint">↑ 点击转盘或中间按钮开始 ↑</div>
+
+<!-- 🔗 分享链接 -->
+<div class="share-link" id="shareLink">
+  📎 分享链接：<a href="https://d82959222-creator.github.io/huangweiqian-zhuanpan/" target="_blank">d82959222-creator.github.io/huangweiqian-zhuanpan</a>
+  <button class="copy-btn" id="copyBtn" title="复制链接">📋 复制</button>
+  <span class="copied-msg" id="copiedMsg">✅ 已复制！</span>
+</div>
 
 <!-- 结果弹窗 -->
 <div class="overlay hidden" id="overlay">
@@ -457,46 +508,56 @@
       ctx.stroke();
 
       // ===== 文字：沿半径方向竖着排列 =====
-      const textRadiusStart = RADIUS * 0.32;
-      const textRadiusEnd = RADIUS * 0.90;
+      const textRadiusStart = RADIUS * 0.22;
+      const textRadiusEnd   = RADIUS * 0.90;
+      const textMidRadius   = (textRadiusStart + textRadiusEnd) / 2;
 
       ctx.save();
-      // 移到扇区中间、文字起始位置
-      const tx = CENTER_X + textRadiusStart * Math.cos(midAngle);
-      const ty = CENTER_Y + textRadiusStart * Math.sin(midAngle);
+      // 移到扇区中间、文字中心位置
+      const tx = CENTER_X + textMidRadius * Math.cos(midAngle);
+      const ty = CENTER_Y + textMidRadius * Math.sin(midAngle);
       ctx.translate(tx, ty);
 
-      // 让文字沿半径方向（从圆心向外）
-      // 对于下半部分的扇区，翻转文字使其不倒置
+      // 让文字沿半径方向（从圆心向外竖着排列）
       const normalizedMid = ((midAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-      if (normalizedMid > Math.PI / 2 && normalizedMid < 3 * Math.PI / 2) {
-        // 左半侧（含底部）：文字从外向圆心读
+      const isFlipped = normalizedMid > Math.PI / 2 && normalizedMid < 3 * Math.PI / 2;
+      if (isFlipped) {
+        // 左/下半侧：翻转180°保证文字可读
         ctx.rotate(midAngle + Math.PI);
       } else {
-        // 右半侧（含顶部）：文字从圆心向外读
+        // 右/上半侧：文字从圆心向外读
         ctx.rotate(midAngle);
       }
 
       const text = items[i];
-      const fontSize = RADIUS * 0.095;
-      const charSpacing = fontSize * 1.15;
+      // 根据可用空间动态计算字号：最长名称也能完整放下
+      const availRadialSpace = textRadiusEnd - textRadiusStart;
+      const maxCharCount = 9; // 最长："王者之锋（斯泰尔）" = 9 字符
+      const fontSize = Math.floor(Math.min(
+        availRadialSpace / (maxCharCount + 1),  // 给最长名称留足空间
+        RADIUS * 0.058                           // 上限
+      ));
+      const charSpacing = fontSize * 1.05;
 
       ctx.font = `bold ${fontSize}px "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // 逐字竖排
-      const totalHeight = text.length * charSpacing;
-      const startOffset = -totalHeight / 2 + charSpacing / 2;
+      // 翻转侧的文字倒序排列，保证始终从圆心向外读
+      const chars = isFlipped ? [...text].reverse() : text;
 
-      for (let c = 0; c < text.length; c++) {
+      // 逐字竖排，居中在 textMidRadius 处
+      const totalHeight = chars.length * charSpacing;
+      const startOffset  = -totalHeight / 2 + charSpacing / 2;
+
+      for (let c = 0; c < chars.length; c++) {
         const cy = startOffset + c * charSpacing;
         // 阴影
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillText(text[c], 1, cy + 1);
-        // 主体
-        ctx.fillStyle = '#fff';
-        ctx.fillText(text[c], 0, cy);
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fillText(chars[c], 1, cy + 1);
+        // 主体白色
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(chars[c], 0, cy);
       }
 
       ctx.restore();
@@ -659,6 +720,31 @@
 
   spinAgainBtn.addEventListener('click', resetAndSpin);
   exitBtn.addEventListener('click', exitApp);
+
+  // ========== 复制链接 ==========
+  const copyBtn = document.getElementById('copyBtn');
+  const copiedMsg = document.getElementById('copiedMsg');
+  copyBtn.addEventListener('click', () => {
+    const url = 'https://d82959222-creator.github.io/huangweiqian-zhuanpan/';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        copiedMsg.classList.add('show');
+        setTimeout(() => copiedMsg.classList.remove('show'), 2000);
+      });
+    } else {
+      // 兼容旧浏览器
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      copiedMsg.classList.add('show');
+      setTimeout(() => copiedMsg.classList.remove('show'), 2000);
+    }
+  });
 
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !isSpinning && overlay.classList.contains('hidden')) {
