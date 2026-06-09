@@ -335,7 +335,7 @@
   <div class="result-card">
     <div class="icon">🎯</div>
     <div class="label">恭 喜 翻 到</div>
-    <img class="result-photo loading" id="resultPhoto" src="" alt="照片" crossorigin="anonymous">
+    <img class="result-photo loading" id="resultPhoto" src="" alt="照片" >
     <div class="weapon" id="resultName"></div>
     <button class="spin-btn" id="spinAgain">🔄 再翻一次</button>
     <button class="exit-btn" id="exitBtn">✕ 退 出</button>
@@ -361,16 +361,16 @@
   // ========== 对应照片 ==========
   // 替换方法：浏览器打开 baike.baidu.com 搜明星名 -> 右键头像 -> 复制图片地址 -> 替换下面URL
   const photos = {
-    '肖战':   'https://placehold.co/200x200/ff6b6b/fff?text=xiaozhan',
-    '王一博': 'https://placehold.co/200x200/ff9100/fff?text=wangyibo',
-    '杨洋':   'https://placehold.co/200x200/ffea00/333?text=yangyang',
-    '王鹤棣': 'https://placehold.co/200x200/00e676/fff?text=wanghedi',
+    '肖战':   'https://pics5.baidu.com/feed/42a98226cffc1e174c027e6c3ae9f212728de9bd.jpeg@f_auto?token=36ebeb6936291e829a6bdde7bd614ff6',
+    '王一博': 'https://inews.gtimg.com/om_bt/OTBsbQZSZg_NdS6YkOTFlw4BzKBR7UCw7t6ds5ANSMvEgAA/641',
+    '杨洋':   'https://img1.baidu.com/it/u=459407977,3300525126&fm=253&app=138&f=JPEG?w=800&h=1200',
+    '王鹤棣': 'https://ww1.sinaimg.cn/mw690/008wEsX4ly1hsvj3odv32j30u013i49p.jpg',
     '吴磊':   'https://placehold.co/200x200/00e5ff/fff?text=wulei',
-    '李现':   'https://placehold.co/200x200/2979ff/fff?text=lixian',
-    '任嘉伦': 'https://placehold.co/200x200/d500f9/fff?text=renjialun',
-    '宋威龙': 'https://placehold.co/200x200/e91e63/fff?text=songweilong',
-    '龚俊':   'https://placehold.co/200x200/00bcd4/fff?text=gongjun',
-    '张凌赫': 'https://placehold.co/200x200/7c4dff/fff?text=zhanglinghe'
+    '李现':   'https://wx4.sinaimg.cn/mw690/007RsMZ1ly1i3pft0ttikj31xg2w6hdv.jpg',
+    '任嘉伦': 'https://ww2.sinaimg.cn/mw690/78ceb44fly1i4ss59ck3ej21hb2mtb2b.jpg',
+    '宋威龙': 'https://c-ssl.dtstatic.com/uploads/blog/202412/18/0GSomg4ds0pVWxy.thumb.1000_0.jpeg',
+    '龚俊':   'https://img0.baidu.com/it/u=1264634234,861828342&fm=253&app=138&f=JPEG?w=500&h=667',
+    '张凌赫': 'https://wx1.sinaimg.cn/mw1024/0068t87Mgy1hubcphmvb5j30u018zdjy.jpg'
   };
 
   const photosBackup = photos;
@@ -652,36 +652,18 @@
     resultName.textContent = name;
 
     // 加载照片
-    const primaryUrl = photos[name];
-    const backupUrl = photosBackup[name];
+    const photoUrl = photos[name];
+    
     resultPhoto.classList.add('loading');
-    resultPhoto.src = '';
-
-    // 尝试加载主图，失败则用备选
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = function() {
-      resultPhoto.src = primaryUrl;
+    resultPhoto.src = photoUrl;
+    resultPhoto.onload = function() {
       resultPhoto.classList.remove('loading');
     };
-    img.onerror = function() {
-      // 尝试备选
-      const img2 = new Image();
-      img2.crossOrigin = 'anonymous';
-      img2.onload = function() {
-        resultPhoto.src = backupUrl;
-        resultPhoto.classList.remove('loading');
-      };
-      img2.onerror = function() {
-        // 都失败了，显示占位
-        resultPhoto.src = '';
-        resultPhoto.classList.remove('loading');
-        resultPhoto.style.background = '#2a2a4a';
-        resultPhoto.alt = name + '（照片加载失败）';
-      };
-      img2.src = backupUrl;
+    resultPhoto.onerror = function() {
+      resultPhoto.classList.remove('loading');
+      resultPhoto.style.background = '#2a2a4a';
+      resultPhoto.alt = name;
     };
-    img.src = primaryUrl;
 
     overlay.classList.remove('hidden');
     createCelebration();
