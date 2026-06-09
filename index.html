@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>黄维倩请转盘</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a16 100%);
+    font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 背景粒子 */
+  .particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: floatUp linear infinite;
+    opacity: 0;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 0.9; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-10vh) scale(1.8); opacity: 0; }
+  }
+
+  /* 标题 */
+  .title {
+    position: relative;
+    z-index: 2;
+    font-size: 44px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #ff1744, #ff9100, #ffea00, #00e676, #00e5ff, #2979ff, #d500f9);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.4));
+  }
+  @keyframes gradientShift {
+    0%,100% { background-position: 0% 50%; }
+    25%     { background-position: 100% 0%; }
+    50%     { background-position: 100% 100%; }
+    75%     { background-position: 0% 100%; }
+  }
+
+  /* 转盘容器 */
+  .wheel-container {
+    position: relative;
+    z-index: 2;
+    width: 560px;
+    height: 560px;
+  }
+
+  /* 指针 */
+  .pointer {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 0;
+    height: 0;
+    border-left: 24px solid transparent;
+    border-right: 24px solid transparent;
+    border-top: 56px solid #ff1744;
+    filter: drop-shadow(0 4px 12px rgba(255,23,68,0.7));
+    transition: transform 0.1s;
+  }
+  .pointer::after {
+    content: '';
+    position: absolute;
+    top: -66px;
+    left: -12px;
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 24px rgba(255,255,255,0.9), 0 0 48px rgba(255,23,68,0.5);
+  }
+
+  /* Canvas */
+  canvas {
+    display: block;
+    border-radius: 50%;
+    box-shadow:
+      0 0 60px rgba(255,255,255,0.2),
+      0 0 120px rgba(255,255,255,0.08),
+      0 20px 80px rgba(0,0,0,0.6);
+    cursor: pointer;
+    transition: filter 0.3s, transform 0.15s;
+  }
+  canvas:hover {
+    filter: brightness(1.08);
+  }
+  canvas:active {
+    filter: brightness(0.95);
+    transform: scale(0.98);
+  }
+
+  /* 中心按钮 */
+  .center-btn {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 38%, #fff, #e8e8e8);
+    border: 5px solid #ff1744;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.6), 0 0 30px rgba(255,23,68,0.3);
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 900;
+    color: #ff1744;
+    letter-spacing: 2px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .center-btn:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 8px 36px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.6), 0 0 50px rgba(255,23,68,0.5);
+  }
+  .center-btn:active {
+    transform: translate(-50%, -50%) scale(0.93);
+  }
+  .center-btn.spinning {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  /* 结果弹窗 */
+  .overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+  }
+  .overlay.hidden { display: none; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .result-card {
+    background: linear-gradient(145deg, #1a1a38, #2c2c50);
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 28px;
+    padding: 44px 56px;
+    text-align: center;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 120px rgba(255,215,0,0.2);
+    animation: popIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 460px;
+    width: 90%;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  .result-card .icon {
+    font-size: 76px;
+    margin-bottom: 14px;
+    animation: bounceIcon 0.5s ease infinite alternate;
+  }
+  @keyframes bounceIcon {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-18px); }
+  }
+
+  .result-card .label {
+    font-size: 18px;
+    color: #bbb;
+    letter-spacing: 6px;
+    margin-bottom: 14px;
+  }
+  .result-card .weapon {
+    font-size: 38px;
+    font-weight: 900;
+    color: #ffd700;
+    letter-spacing: 4px;
+    margin-bottom: 36px;
+    text-shadow: 0 0 30px rgba(255,215,0,0.6);
+    word-break: keep-all;
+    line-height: 1.4;
+  }
+  .result-card .spin-btn {
+    padding: 14px 52px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, #ff1744, #d50000);
+    box-shadow: 0 10px 36px rgba(255,23,68,0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .result-card .spin-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 14px 48px rgba(255,23,68,0.7);
+  }
+  .result-card .spin-btn:active {
+    transform: scale(0.95);
+  }
+  .result-card .exit-btn {
+    margin-top: 18px;
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: none;
+    color: #ccc;
+    font-size: 16px;
+    padding: 12px 52px;
+    border-radius: 40px;
+    cursor: pointer;
+    letter-spacing: 3px;
+    transition: background 0.2s;
+  }
+  .result-card .exit-btn:hover {
+    background: rgba(255,255,255,0.1);
+    box-shadow: none;
+  }
+
+  /* 提示文字 */
+  .hint {
+    position: relative;
+    z-index: 2;
+    margin-top: 20px;
+    color: rgba(255,255,255,0.45);
+    font-size: 14px;
+    letter-spacing: 4px;
+  }
+
+  /* 手机适配 */
+  @media (max-width: 600px) {
+    .title { font-size: 28px; letter-spacing: 4px; margin-bottom: 12px; }
+    .wheel-container { width: 92vw; height: 92vw; }
+    canvas { width: 92vw; height: 92vw; }
+    .center-btn { width: 64px; height: 64px; font-size: 16px; border-width: 4px; }
+    .pointer { top: -22px; border-left-width: 16px; border-right-width: 16px; border-top-width: 38px; }
+    .pointer::after { top: -46px; left: -8px; width: 16px; height: 16px; }
+    .hint { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 背景粒子 -->
+<div class="particles" id="particles"></div>
+
+<!-- 标题 -->
+<div class="title">黄维倩请转盘</div>
+
+<!-- 转盘 -->
+<div class="wheel-container" id="wheelContainer">
+  <div class="pointer" id="pointer"></div>
+  <canvas id="wheelCanvas" width="560" height="560"></canvas>
+  <button class="center-btn" id="centerBtn" title="点击开始转盘">转</button>
+</div>
+
+<div class="hint">↑ 点击转盘或中间按钮开始 ↑</div>
+
+<!-- 结果弹窗 -->
+<div class="overlay hidden" id="overlay">
+  <div class="result-card">
+    <div class="icon">🎯</div>
+    <div class="label">恭 喜 获 得</div>
+    <div class="weapon" id="resultWeapon"></div>
+    <button class="spin-btn" id="spinAgain">🔄 再转一次</button>
+    <button class="exit-btn" id="exitBtn">✕ 退 出</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ========== 20 个选项 ==========
+  const items = [
+    'AK47-奉先',
+    'M4A1-星象',
+    'MK47-仁德',
+    'M4A1-威侯',
+    'SCAR-文远',
+    '王者之心（AK）',
+    '王者幻神（M200）',
+    '巴雷特-毁灭',
+    'AWM-天龙',
+    '王者之力（AWM）',
+    '贝雷塔687',
+    '王者之烈',
+    'MP5-兰',
+    '王者之锋（斯泰尔）',
+    'KAC-突袭者',
+    'MG36-魔礼青',
+    '沙鹰-天神',
+    'USP-仁德',
+    'COP357-雷神',
+    '81式-瑜'
+  ];
+
+  // ========== 7 种鲜艳颜色（红橙黄绿青蓝紫） ==========
+  const colors = [
+    '#FF1744', // 红 - 鲜艳红
+    '#FF9100', // 橙 - 鲜艳橙
+    '#FFEA00', // 黄 - 鲜艳黄
+    '#00E676', // 绿 - 鲜艳绿
+    '#00E5FF', // 青 - 鲜艳青
+    '#2979FF', // 蓝 - 鲜艳蓝
+    '#D500F9'  // 紫 - 鲜艳紫
+  ];
+
+  // 交替深浅色，让每个扇区区别更明显
+  function getSegmentColor(index) {
+    const base = colors[index % colors.length];
+    // 偶数用原色，奇数用稍微深一点的变体
+    if (index % 2 === 0) return base;
+    // 加深相邻扇区
+    return darkenColor(base, 0.22);
+  }
+
+  function darkenColor(hex, amount) {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = Math.max(0, Math.floor((num >> 16) * (1 - amount)));
+    const g = Math.max(0, Math.floor(((num >> 8) & 0x00FF) * (1 - amount)));
+    const b = Math.max(0, Math.floor((num & 0x0000FF) * (1 - amount)));
+    return `rgb(${r},${g},${b})`;
+  }
+
+  // ========== DOM 元素 ==========
+  const canvas = document.getElementById('wheelCanvas');
+  const ctx = canvas.getContext('2d');
+  const centerBtn = document.getElementById('centerBtn');
+  const pointer = document.getElementById('pointer');
+  const overlay = document.getElementById('overlay');
+  const resultWeapon = document.getElementById('resultWeapon');
+  const spinAgainBtn = document.getElementById('spinAgain');
+  const exitBtn = document.getElementById('exitBtn');
+  const wheelContainer = document.getElementById('wheelContainer');
+
+  // 响应式尺寸
+  function getSize() {
+    const w = wheelContainer.clientWidth;
+    return w || 560;
+  }
+
+  let WIDTH = canvas.width;
+  let HEIGHT = canvas.height;
+  let CENTER_X = WIDTH / 2;
+  let CENTER_Y = HEIGHT / 2;
+  let RADIUS = 248;
+  const SEG_COUNT = items.length;
+  const ARC = (2 * Math.PI) / SEG_COUNT;
+
+  // ========== 状态 ==========
+  let currentAngle = 0;
+  let isSpinning = false;
+  let animationId = null;
+
+  // ========== 响应式重绘 ==========
+  function updateDimensions() {
+    const size = getSize();
+    if (canvas.width !== size) {
+      canvas.width = size;
+      canvas.height = size;
+      WIDTH = size;
+      HEIGHT = size;
+      CENTER_X = size / 2;
+      CENTER_Y = size / 2;
+      RADIUS = size * 0.443;
+    }
+  }
+
+  // ========== 绘制转盘 ==========
+  function drawWheel(angle) {
+    updateDimensions();
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+    // 外圈装饰环（金色）
+    const outerRingGrad = ctx.createRadialGradient(CENTER_X, CENTER_Y, RADIUS + 8, CENTER_X, CENTER_Y, RADIUS + 20);
+    outerRingGrad.addColorStop(0, '#ffd700');
+    outerRingGrad.addColorStop(0.5, '#ffaa00');
+    outerRingGrad.addColorStop(1, '#cc8800');
+    ctx.beginPath();
+    ctx.arc(CENTER_X, CENTER_Y, RADIUS + 18, 0, 2 * Math.PI);
+    ctx.fillStyle = outerRingGrad;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // 外圈灯泡效果
+    const bulbCount = 48;
+    for (let i = 0; i < bulbCount; i++) {
+      const bulbAngle = (i / bulbCount) * 2 * Math.PI;
+      const bx = CENTER_X + (RADIUS + 16) * Math.cos(bulbAngle);
+      const by = CENTER_Y + (RADIUS + 16) * Math.sin(bulbAngle);
+      ctx.beginPath();
+      ctx.arc(bx, by, 4.5, 0, 2 * Math.PI);
+      const bright = Math.sin(Date.now() / 250 + i * 0.6) * 0.4 + 0.6;
+      ctx.fillStyle = `rgba(255,255,220,${bright})`;
+      ctx.fill();
+      // 光晕
+      ctx.beginPath();
+      ctx.arc(bx, by, 7, 0, 2 * Math.PI);
+      ctx.fillStyle = `rgba(255,255,200,${bright * 0.3})`;
+      ctx.fill();
+    }
+
+    // 扇区
+    for (let i = 0; i < SEG_COUNT; i++) {
+      const startAngle = angle + i * ARC;
+      const endAngle = startAngle + ARC;
+      const midAngle = startAngle + ARC / 2;
+
+      // 填充扇区
+      ctx.beginPath();
+      ctx.moveTo(CENTER_X, CENTER_Y);
+      ctx.arc(CENTER_X, CENTER_Y, RADIUS, startAngle, endAngle);
+      ctx.closePath();
+      ctx.fillStyle = getSegmentColor(i);
+      ctx.fill();
+      // 白色分割线
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // ===== 文字：沿半径方向竖着排列 =====
+      const textRadiusStart = RADIUS * 0.32;
+      const textRadiusEnd = RADIUS * 0.90;
+
+      ctx.save();
+      // 移到扇区中间、文字起始位置
+      const tx = CENTER_X + textRadiusStart * Math.cos(midAngle);
+      const ty = CENTER_Y + textRadiusStart * Math.sin(midAngle);
+      ctx.translate(tx, ty);
+
+      // 让文字沿半径方向（从圆心向外）
+      // 对于下半部分的扇区，翻转文字使其不倒置
+      const normalizedMid = ((midAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      if (normalizedMid > Math.PI / 2 && normalizedMid < 3 * Math.PI / 2) {
+        // 左半侧（含底部）：文字从外向圆心读
+        ctx.rotate(midAngle + Math.PI);
+      } else {
+        // 右半侧（含顶部）：文字从圆心向外读
+        ctx.rotate(midAngle);
+      }
+
+      const text = items[i];
+      const fontSize = RADIUS * 0.095;
+      const charSpacing = fontSize * 1.15;
+
+      ctx.font = `bold ${fontSize}px "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // 逐字竖排
+      const totalHeight = text.length * charSpacing;
+      const startOffset = -totalHeight / 2 + charSpacing / 2;
+
+      for (let c = 0; c < text.length; c++) {
+        const cy = startOffset + c * charSpacing;
+        // 阴影
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillText(text[c], 1, cy + 1);
+        // 主体
+        ctx.fillStyle = '#fff';
+        ctx.fillText(text[c], 0, cy);
+      }
+
+      ctx.restore();
+    }
+
+    // 内圈装饰
+    const innerGrad = ctx.createRadialGradient(CENTER_X, CENTER_Y, 20, CENTER_X, CENTER_Y, 58);
+    innerGrad.addColorStop(0, '#ffffff');
+    innerGrad.addColorStop(0.6, '#f0f0f0');
+    innerGrad.addColorStop(1, '#cccccc');
+    ctx.beginPath();
+    ctx.arc(CENTER_X, CENTER_Y, 54, 0, 2 * Math.PI);
+    ctx.fillStyle = innerGrad;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  }
+
+  // ========== 空闲动画 ==========
+  function idleAnimate() {
+    if (isSpinning) return;
+    drawWheel(currentAngle);
+    requestAnimationFrame(() => {
+      if (!isSpinning) idleAnimate();
+    });
+  }
+
+  // ========== 旋转 ==========
+  function spin() {
+    if (isSpinning) return;
+    isSpinning = true;
+    centerBtn.classList.add('spinning');
+    pointer.style.transform = 'translateX(-50%) scale(1.2)';
+
+    const extraSpins = 5 + Math.random() * 3;
+    const randomOffset = Math.random() * 2 * Math.PI;
+    const totalRotation = extraSpins * 2 * Math.PI + randomOffset;
+    const startAngle = currentAngle;
+    const targetAngle = startAngle + totalRotation;
+    const startTime = performance.now();
+    const duration = 5000;
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1.0);
+      // ease-out: 先快后慢
+      const eased = 1 - Math.pow(1 - progress, 3.5);
+
+      currentAngle = startAngle + totalRotation * eased;
+      drawWheel(currentAngle);
+
+      if (progress < 1.0) {
+        animationId = requestAnimationFrame(animate);
+      } else {
+        currentAngle = targetAngle;
+        drawWheel(currentAngle);
+        onSpinEnd();
+      }
+    }
+
+    animationId = requestAnimationFrame(animate);
+  }
+
+  // ========== 结果 ==========
+  function onSpinEnd() {
+    isSpinning = false;
+    centerBtn.classList.remove('spinning');
+    pointer.style.transform = 'translateX(-50%)';
+
+    // 指针在顶部（12点钟 = -π/2），计算指向的扇区
+    let pointerAngle = (2 * Math.PI - (currentAngle % (2 * Math.PI)) - Math.PI / 2) % (2 * Math.PI);
+    if (pointerAngle < 0) pointerAngle += 2 * Math.PI;
+
+    const winningIndex = Math.floor(pointerAngle / ARC);
+    const weapon = items[winningIndex];
+
+    resultWeapon.textContent = weapon;
+    overlay.classList.remove('hidden');
+    createCelebration();
+  }
+
+  // ========== 庆祝效果 ==========
+  function createCelebration() {
+    const emojis = ['🎉', '✨', '🌟', '💫', '🎊', '🎯', '🔥', '⚡', '🎆', '💥'];
+    for (let i = 0; i < 40; i++) {
+      setTimeout(() => {
+        const el = document.createElement('span');
+        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        const dx = (Math.random() - 0.5) * 300;
+        const dy = -(100 + Math.random() * 300);
+        el.style.cssText = `
+          position: fixed;
+          z-index: 200;
+          font-size: ${22 + Math.random() * 40}px;
+          left: 50%;
+          top: 40%;
+          pointer-events: none;
+          animation: celebPop ${0.7 + Math.random() * 1.4}s ease-out forwards;
+          --dx: ${dx}px;
+          --dy: ${dy}px;
+        `;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2500);
+      }, i * 25);
+    }
+  }
+
+  // 庆祝动画 keyframes
+  const celebStyle = document.createElement('style');
+  celebStyle.textContent = `
+    @keyframes celebPop {
+      0%   { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; }
+      50%  { opacity: 0.9; }
+      100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.3) rotate(${Math.random() > 0.5 ? '' : '-'}${120 + Math.random() * 240}deg); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(celebStyle);
+
+  // ========== 按钮事件 ==========
+  function resetAndSpin() {
+    overlay.classList.add('hidden');
+    document.querySelectorAll('span[style*="celebPop"]').forEach(el => el.remove());
+    setTimeout(() => spin(), 250);
+  }
+
+  function exitApp() {
+    if (window.close) window.close();
+    if (!window.closed) {
+      document.body.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;color:#fff;font-family:'Microsoft YaHei',sans-serif;background:#0a0a16;">
+          <div style="font-size:56px;margin-bottom:24px;">👋</div>
+          <div style="font-size:26px;letter-spacing:6px;margin-bottom:14px;">感谢参与！</div>
+          <div style="color:#888;font-size:14px;">请关闭浏览器页面退出</div>
+        </div>
+      `;
+    }
+  }
+
+  // ========== 事件绑定 ==========
+  canvas.addEventListener('click', (e) => {
+    if (isSpinning) return;
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.clientX - rect.left - rect.width / 2;
+    const cy = e.clientY - rect.top - rect.height / 2;
+    if (Math.sqrt(cx * cx + cy * cy) < RADIUS + 20) spin();
+  });
+
+  // 触摸事件（手机）
+  canvas.addEventListener('touchend', (e) => {
+    if (isSpinning) return;
+    e.preventDefault();
+    spin();
+  });
+
+  centerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!isSpinning) spin();
+  });
+
+  spinAgainBtn.addEventListener('click', resetAndSpin);
+  exitBtn.addEventListener('click', exitApp);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !isSpinning && overlay.classList.contains('hidden')) {
+      e.preventDefault();
+      spin();
+    }
+    if (e.code === 'Escape') {
+      if (!overlay.classList.contains('hidden')) {
+        overlay.classList.add('hidden');
+      } else {
+        exitApp();
+      }
+    }
+  });
+
+  // ========== 背景粒子 ==========
+  function createBgParticles() {
+    const container = document.getElementById('particles');
+    const colorArr = ['#ff1744', '#ff9100', '#ffea00', '#00e676', '#00e5ff', '#2979ff', '#d500f9'];
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const size = 2 + Math.random() * 7;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.backgroundColor = colorArr[Math.floor(Math.random() * colorArr.length)];
+      p.style.animationDuration = (5 + Math.random() * 15) + 's';
+      p.style.animationDelay = Math.random() * 12 + 's';
+      p.style.boxShadow = `0 0 ${size * 3}px ${p.style.backgroundColor}`;
+      container.appendChild(p);
+    }
+  }
+
+  // ========== 窗口大小变化重绘 ==========
+  window.addEventListener('resize', () => {
+    if (!isSpinning) drawWheel(currentAngle);
+  });
+
+  // ========== 启动 ==========
+  function init() {
+    createBgParticles();
+    updateDimensions();
+    drawWheel(currentAngle);
+    idleAnimate();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
